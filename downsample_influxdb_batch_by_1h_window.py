@@ -42,6 +42,11 @@ iterate_through = 'series'
 if iterate_through not in ('measurements','series'): raise Exception(
     f"Config error: iterate_through should be in 'measurements','series', got '{iterate_through}''.")
     
+# open connection
+client = DataFrameClient(influxdb_address, influxdb_port, influxdb_user, influxdb_password, db_name)
+# test connection
+rs = client.query("show measurements")
+print(rs)
 
 # usunięcie retention policy wybrane (opcjonalnie)
 # rs = client.query(f"drop retention policy {rp_target_selected} on {db_name}")
