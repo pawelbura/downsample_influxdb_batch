@@ -112,8 +112,7 @@ print(f"downsampling data from {start_time} to {end_time}")
 
 # formatowanie do timestap influx
 end_time = "{:.0f}".format(end_time.timestamp()*1000000000)
-start_time = end_time - timedelta(days=14)
-
+start_time = "{:.0f}".format(start_time.timestamp()*1000000000)
 
 for i in results.get_points():
     #print(i)
