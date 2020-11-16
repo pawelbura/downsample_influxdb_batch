@@ -26,7 +26,7 @@ import re
 ### pip3 install influxdb
 
 # configuration for connection
-influxdb_address = '192.168.1.128'
+influxdb_address = 'localhost'
 influxdb_port = 8086
 influxdb_user = ''
 influxdb_password = ''
