@@ -118,6 +118,7 @@ if not True in [True if x['name']==rp_from else False for x in rs.get_points()]:
     raise Exception(f"Configuration error: retention policy '{rp_from}' not found on '{db_name}' db. "
                     "Verify your config.")
 
+print(f"{datetime.now()}|mode:{downsample_mode}|start")
     
 # modes
 if downsample_mode == 'simple_group_by_fullscan' :
@@ -143,7 +144,7 @@ if downsample_mode == 'simple_group_by_fullscan' :
 
     results = client.query("show measurements")
     print(results)
-    print(f"start:{datetime.now()}")
+    print(f"{datetime.now()}|start:{datetime.now()}")
     for i in results.get_points():
         #print(i)
         #print(f"{type(i)}, {len(i)}")
@@ -164,7 +165,7 @@ if downsample_mode == 'simple_group_by_fullscan' :
         # zapisanie wyniku do DataFrame
         df = df.append(pd.Series(data=[rsinsert['result']['written'][0], datetime.now()],index=['written','time'], name=measurement))
 
-    print(f"stop:{datetime.now()}")
+    print(f"{datetime.now()}|stop:{datetime.now()}")
 
 elif downsample_mode in ('iterate_by_1h_window_series', 'iterate_by_1h_window_measurements_only')  :
     """
@@ -238,7 +239,7 @@ elif downsample_mode in ('iterate_by_1h_window_series', 'iterate_by_1h_window_me
     # ustawienie start_time na now()-14d
     start_time = end_time - timedelta(days=14)
 
-    print(f"downsampling data from {start_time} to {end_time}")
+    print(f"{datetime.now()}|downsampling data from {start_time} to {end_time}")
 
     # formatowanie do timestap influx
     end_time = "{:.0f}".format(end_time.timestamp()*1000000000)
@@ -292,14 +293,15 @@ else:
     raise Exception(f"Config error: mode should be in 'simple_group_by_fullscan', "
                     "'iterate_by_1h_window_series', 'iterate_by_1h_window_measurements_only', "
                     "got '{downsample_mode}''.")
-                      
-print(f"written count: {df.written.count()}")
-print(f"written sum  : {int(df.written.sum())}")
-print(f"time  start: {df.time.min()}")
-print(f"time    end: {df.time.max()}")
-print(f"passed in: {df.time.max()-df.time.min()}")
+
+print(f"{datetime.now()}|mode:{downsample_mode}|stop")
+print(f"{datetime.now()}|written count: {df.written.count()}")
+print(f"{datetime.now()}|written sum  : {int(df.written.sum())}")
+print(f"{datetime.now()}|time  start: {df.time.min()}")
+print(f"{datetime.now()}|time    end: {df.time.max()}")
+print(f"{datetime.now()}|passed in: {df.time.max()-df.time.min()}")
 
 file_name = f"workdir/{datetime.now()}_downsample_influx_batch_{downsample_mode}.csv"
 df.to_csv(file_name)     
-print(f"Skończone. df zapisany do pliku {file_name}")           
+print(f"Skończone. df zapisany do pliku {file_name}")
 
