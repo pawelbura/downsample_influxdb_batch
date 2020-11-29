@@ -9,13 +9,13 @@ FROM azogue/py36_base:rpi3
 
 # Set the working directory to / 
 # in the container
-WORKDIR /
+WORKDIR /app/
 
 # Copy the python script
 COPY app/* /app/
 
 # Install any needed packages specified in requirements.txt
-RUN pip install --trusted-host pypi.python.org -r app/requirements.txt
+RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 
 # Run app.py when the container launches

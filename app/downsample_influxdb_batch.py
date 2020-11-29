@@ -90,6 +90,15 @@ rp_target = config_object.get('influxdb_db','retention_policy_to',
 downsample_mode = config_object.get('downsample_mode','mode', 
                                     fallback='iterate_by_1h_window_measurements_only')
 
+# retention policy drop before 
+# designed to be used for testing purposes
+# WARNING! use it carefully, it deletes all data in retention policy with name retention_policy_to. ALL THE DATA. 
+# DEFAULT = NO
+rp_target_drop_before = config_object.get('downsample_mode','retention_policy_to_drop_before_downsampling', 
+                              fallback='NO')
+rp_target_drop_before_YES = 'yes_and_I_know_it_is_dengerous_and_drops_data'
+
+
 # TODO: dodać to do parametrów z konfiguracji i stosować w każdej z metod
 # bo na razie uwżywane tylko w simple group by 
 downsample_time = '1d'
@@ -114,8 +123,10 @@ if downsample_mode == 'simple_group_by_fullscan' :
     downsample_influxdb_batch_simple_group_by_fullscan
     """
     # [opcjonalnie] usunięcie retention policy dzinne 
-    # rs = client.query(f"drop retention policy {rp_target} on {db_name}")
-    # print(rs)
+    if rp_target_drop_before == rp_target_drop_before_YES:
+        print("WARNING!!! Configuration set to drop target retention policy AND ALL DATA inside! Data may be lost.")
+        rs = client.query(f"drop retention policy {rp_target} on {db_name}")
+        print(rs)
 
     # utworzenie retention policy do którego będzie zapisywany downsampling
     rs = client.query(f"create retention policy {rp_target} on {db_name} duration 0s replication 1")
@@ -166,9 +177,11 @@ elif downsample_mode in ('iterate_by_1h_window_series', 'iterate_by_1h_window_me
         raise Exception(f"Config error: iterate_through should be in 'measurements','series', got '{iterate_through}''.")
 
               
-    # usunięcie retention policy wybrane (opcjonalnie)
-    # rs = client.query(f"drop retention policy {rp_target} on {db_name}")
-    # print(rs)
+    # [opcjonalnie] usunięcie retention policy dzinne 
+    if rp_target_drop_before == rp_target_drop_before_YES:
+        print("WARNING!!! Configuration set to drop target retention policy AND ALL DATA inside! Data may be lost.")
+        rs = client.query(f"drop retention policy {rp_target} on {db_name}")
+        print(rs)
 
     # utworzenie retention policy do którego będzie zapisywany downsampling
     rs_rp = client.query(f"create retention policy {rp_target} on {db_name} duration 0s replication 1")
