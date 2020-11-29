@@ -65,7 +65,7 @@ from configparser import ConfigParser
 
 #Read config.ini file
 config_object = ConfigParser()
-config_object.read('config.ini')
+config_object.read('workdir/config.ini')
 
 # listen_address = configs.get('ServerConfigs', 'listen_address', fallback='127.0.0.1')
 #test = config_object.get('influxdb_connection','dfa', fallback='fall')
@@ -151,21 +151,10 @@ if downsample_mode == 'simple_group_by_fullscan' :
 
 elif downsample_mode in ('iterate_by_1h_window_series', 'iterate_by_1h_window_measurements_only')  :
     """
-    downsample_influxdb_batch_by_1h_window.py
-        trochę bardziej rozbudowany, wolniejszy ale na pewno się wykona
-            (nie skończy się pamięć, bo wykonuje wiele małych zapytań)
-        wada: wybiera po jednym wierszu z godziny, więc bez informacji min i max
-            potencjalnie tracimy informacje o jakiś spikes
-        iteruje po measurements albo po series
-        zaleta: dzięki nie używaniu group by, przepisuje dokładnie wszystko
-        działanie
-            pętla po measurments
-                pętla po series
-                    pętla po 1h oknach czasowych
-                        select * into rp_target limi 1
-                        czyli wybiera 1. wiersz z każdej godziny
-            zapisuje wynik do pliku: {now()}_downsample_influx_batch.csv
-            gdzie można zobaczyć ile się zapisało i w jakim czasie
+    downsample_influxdb_batch_by_1h_window
+        2 modes:
+            iterate_by_1h_window_series
+            iterate_by_1h_window_measurements_only
     """
 
     # ustalenie czy iterujemy po mesurements i series
@@ -288,9 +277,11 @@ elif downsample_mode in ('iterate_by_1h_window_series', 'iterate_by_1h_window_me
     print(f"time    end: {df.time.max()}")
     print(f"passed in: {df.time.max()-df.time.min()}")
 
-    file_name = f"{datetime.now()}_downsample_influx_batch.csv"
+    file_name = f"workdir/{datetime.now()}_downsample_influx_batch.csv"
     df.to_csv(file_name)     
     print(f"Skończone. df zapisany do pliku {file_name}")           
 else:
-    raise Exception(f"Config error: mode should be in 'simple_group_by_fullscan', 'iterate_by_1h_window_series', 'iterate_by_1h_window_measurements_only', got '{downsample_mode}''.")
+    raise Exception(f"Config error: mode should be in 'simple_group_by_fullscan', "
+                    "'iterate_by_1h_window_series', 'iterate_by_1h_window_measurements_only', "
+                    "got '{downsample_mode}''.")
 

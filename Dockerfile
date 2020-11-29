@@ -11,13 +11,12 @@ FROM azogue/py36_base:rpi3
 # in the container
 WORKDIR /
 
+# Copy the python script
+COPY app/* /app/
+
 # Install any needed packages specified in requirements.txt
-COPY app/requirements.txt /app/requirements.txt
 RUN pip install --trusted-host pypi.python.org -r app/requirements.txt
 
-# Copy the python script
-COPY app/* /app
-#COPY downsample_influxdb_batch_by_1h_window.py /app/downsample_influxdb_batch_by_1h_window.py
 
 # Run app.py when the container launches
 # The -u flag specifies to use the unbuffered ouput.

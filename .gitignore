@@ -1,3 +1,6 @@
+# ignore workdir as there are current config and outputs of runs
+app/workdir/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
