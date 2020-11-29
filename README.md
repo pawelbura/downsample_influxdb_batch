@@ -1,7 +1,10 @@
 # downsample_influxdb_batch
 python batch script to downsample influxdb database in a batch mode
 
+### This script is inteded to be small, used from time to time and run in a batch mode.
+### Script prepared to tun in docker container
 
+### Other ways
 There are plenty of ways to do downsampling, for example the one suggested by influx:
  - use influxdb continuous query to insert downsampled data to another retention policy and configure original retention policy to be restricted to shorter time: 
  https://docs.influxdata.com/influxdb/v1.8/guides/downsample_and_retain/
@@ -14,8 +17,6 @@ From TICK stack, you can use Kapacitor:
 
 But this is another comprehensive tool to configure.
 
-### This script is inteded to be small, used from time to time and run in a batch mode.
-### Script prepared to tun in docker container
 
 # docker build
 to build docker image from code, execute:
