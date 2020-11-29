@@ -67,9 +67,6 @@ from configparser import ConfigParser
 config_object = ConfigParser()
 config_object.read('workdir/config.ini')
 
-# listen_address = configs.get('ServerConfigs', 'listen_address', fallback='127.0.0.1')
-#test = config_object.get('influxdb_connection','dfa', fallback='fall')
-
 # configuration for connection
 influxdb_address = config_object.get('influxdb_connection','influxdb_address', 
                                      fallback='localhost')
@@ -102,6 +99,12 @@ rp_target_drop_before_YES = 'yes_and_I_know_it_is_dengerous_and_drops_data'
 # TODO: dodać to do parametrów z konfiguracji i stosować w każdej z metod
 # bo na razie uwżywane tylko w simple group by 
 downsample_time = '1d'
+
+# df zapisuję wyniki pośrednie, żeby na koniec podsumować
+# TODO: pandas dataframe użyty dla ułatwienia, w zasadzie niepotrzebny, a przez pandas 
+# trzeba użyć specjalnego obrazu dockera, zamiast najprostrzego python slim, bo nie działa na rasperry pi
+# więc zamiast użyć coś prostego jak list of sets, czy coś takiego
+df = pd.DataFrame()
 
 # open connection
 client = DataFrameClient(influxdb_address, influxdb_port, influxdb_user, influxdb_password, db_name)
@@ -158,6 +161,9 @@ if downsample_mode == 'simple_group_by_fullscan' :
                   field_names += f"mean(\"{field['fieldKey']}\") as \"{field['fieldKey']}\""
         rsinsert = client.query(f"select {field_names}, min(*), max(*) into \"{db_name}\".\"{rp_target}\".\"{measurement}\" from \"{db_name}\".\"{rp_from}\".\"{measurement}\" group by *, time({downsample_time})")
         print(rsinsert)
+        # zapisanie wyniku do DataFrame
+        df = df.append(pd.Series(data=[rsinsert['result']['written'][0], datetime.now()],index=['written','time'], name=measurement))
+
     print(f"stop:{datetime.now()}")
 
 elif downsample_mode in ('iterate_by_1h_window_series', 'iterate_by_1h_window_measurements_only')  :
@@ -226,8 +232,6 @@ elif downsample_mode in ('iterate_by_1h_window_series', 'iterate_by_1h_window_me
     #     pętla okresem downsample_time
     #     i insert last() z tego okresu do retention policy target
 
-    df = pd.DataFrame()
-
     # ustawienie end_time na dziś północ, będzie ten sam moment w czasie dla wszystkich danych przepisanych do rp_wybrane
     end_time = datetime.combine(date.today(), time(0, 0))
 
@@ -284,17 +288,18 @@ elif downsample_mode in ('iterate_by_1h_window_series', 'iterate_by_1h_window_me
             # jeżeli nie po seriach a po measurements, to iterujemy po seriach bez where_clause, wtedy jeden select per measurement
             iterate_series('')
 
-    print(f"written count: {df.written.count()}")
-    print(f"written sum  : {int(df.written.sum())}")
-    print(f"time  start: {df.time.min()}")
-    print(f"time    end: {df.time.max()}")
-    print(f"passed in: {df.time.max()-df.time.min()}")
-
-    file_name = f"workdir/{datetime.now()}_downsample_influx_batch.csv"
-    df.to_csv(file_name)     
-    print(f"Skończone. df zapisany do pliku {file_name}")           
 else:
     raise Exception(f"Config error: mode should be in 'simple_group_by_fullscan', "
                     "'iterate_by_1h_window_series', 'iterate_by_1h_window_measurements_only', "
                     "got '{downsample_mode}''.")
+                      
+print(f"written count: {df.written.count()}")
+print(f"written sum  : {int(df.written.sum())}")
+print(f"time  start: {df.time.min()}")
+print(f"time    end: {df.time.max()}")
+print(f"passed in: {df.time.max()-df.time.min()}")
+
+file_name = f"workdir/{datetime.now()}_downsample_influx_batch_{downsample_mode}.csv"
+df.to_csv(file_name)     
+print(f"Skończone. df zapisany do pliku {file_name}")           
 
