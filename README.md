@@ -23,3 +23,34 @@ to build docker image from code, execute:
 ```bash
 docker build . -t downsample_influxdb 
 ```
+
+# docker run
+script is using `workdir` to read `config.ini` file and write some output files
+To make a dir and copy there initial `config.ini` file:
+```bash
+mkdir workdir
+wget -O workdir/config.ini https://raw.githubusercontent.com/pawelbura/downsample_influxdb_batch/main/app/config.ini
+```
+
+And update `confit.ini` to your needs.
+
+To run docker image (and map workdir from outside):
+```bash
+docker run -d -v $PWD/workdir:/app/workdir --name=downsample_influxdb downsample_influxdb
+```
+Please note that with this setup `localhost` address will not be accesible, you need to specify IP address. This can be overcome with using host network inside contaner:
+```bash
+docker run -d --net=host -v $PWD/workdir:/app/workdir --name=downsample_influxdb downsample_influxdb
+```
+
+And then it can be started whenever needed using:
+```bash
+docker start downsample_influxdb
+```
+
+
+...
+To run docker image interactivly (for test or so):
+```bash
+docker run -it -v $PWD/workdir:/app/workdir --name=downsample_influxdb downsample_influxdb bash
+```
