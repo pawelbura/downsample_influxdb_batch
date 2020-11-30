@@ -278,12 +278,12 @@ elif downsample_mode in ('iterate_by_1h_window_series', 'iterate_by_1h_window_me
                 where_clause = where_clause.replace("\\","")
                 # i wykonujemy pętle po przedziałach godzinowych  
                 #print(f"where:{where_clause}")
-                print('|', end='')
+                print(':', end='')
                 iterate_series(where_clause)
 
             if where_clause == '':
                 # jeżeli powyższa pętla się nie wykonała, to jescze raz select into bez where
-                print('|', end='')
+                print(':', end='')
                 iterate_series(where_clause)
         elif iterate_through == 'measurements':
             # jeżeli nie po seriach a po measurements, to iterujemy po seriach bez where_clause, wtedy jeden select per measurement
@@ -304,4 +304,5 @@ print(f"{datetime.now()}|passed in: {df.time.max()-df.time.min()}")
 file_name = f"workdir/{datetime.now()}_downsample_influx_batch_{downsample_mode}.csv"
 df.to_csv(file_name)     
 print(f"Skończone. df zapisany do pliku {file_name}")
+                      
 
