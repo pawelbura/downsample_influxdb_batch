@@ -87,7 +87,7 @@ if not True in [True if x['name']==rp_from else False for x in rs.get_points()]:
     raise Exception(f"Configuration error: retention policy '{rp_from}' not found on '{db_name}' db. "
                     "Verify your config.")
 
-print(f"{datetime.now()}|mode:{downsample_mode}|start")
+print(f"{datetime.now()}| START |mode:{downsample_mode}|")
     
 # modes
 if downsample_mode == 'simple_group_by_fullscan' :
@@ -263,14 +263,15 @@ else:
                     "'iterate_by_1h_window_series', 'iterate_by_1h_window_measurements_only', "
                     "got '{downsample_mode}''.")
 
-print(f"{datetime.now()}|mode:{downsample_mode}|stop")
-print(f"{datetime.now()}|written count: {df.written.count()}")
-print(f"{datetime.now()}|written sum  : {int(df.written.sum())}")
-print(f"{datetime.now()}|time  start: {df.time.min()}")
-print(f"{datetime.now()}|time    end: {df.time.max()}")
+print(f"{datetime.now()}|written count: {df.written.count()}")      # how many select...into done
+print(f"{datetime.now()}|written sum  : {int(df.written.sum())}")   # how many datapoints written
+print(f"{datetime.now()}|time  start: {df.time.min()}")             # first select done
+print(f"{datetime.now()}|time    end: {df.time.max()}")             # last select done
 print(f"{datetime.now()}|passed in: {df.time.max()-df.time.min()}")
 
 file_name = f"workdir/{datetime.now()}_downsample_influx_batch_{downsample_mode}.csv"
 df.to_csv(file_name)     
-print(f"Skończone. df zapisany do pliku {file_name}")
+print(f"{datetime.now()}|Finished. Result written to file: {file_name}")
+print(f"{datetime.now()}| STOP |mode:{downsample_mode}|")
+print(f"{datetime.now()}|_____________________________|")
 
