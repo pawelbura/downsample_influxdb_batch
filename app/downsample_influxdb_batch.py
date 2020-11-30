@@ -85,7 +85,7 @@ rp_target = config_object.get('influxdb_db','retention_policy_to',
 
 # downsample_mode configuration
 downsample_mode = config_object.get('downsample_mode','mode', 
-                                    fallback='iterate_by_1h_window_measurements_only')
+                                    fallback='simple_group_by_fullscan')
 
 # retention policy drop before 
 # designed to be used for testing purposes
