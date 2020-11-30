@@ -88,6 +88,7 @@ if not True in [True if x['name']==rp_from else False for x in rs.get_points()]:
                     "Verify your config.")
 
 print(f"{datetime.now()}| START |mode:{downsample_mode}|")
+print(f"{datetime.now()}|Retention policy source: {rp_from}|Retention policy target: {rp_target}|")
     
 # modes
 if downsample_mode == 'simple_group_by_fullscan' :
