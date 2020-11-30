@@ -10,45 +10,14 @@
 downsample_influxdb_batch.py
 
 
-    mode == simple_group_by_1d_fullscan :
-        prosty, o ile fullscan się wykona w skończonym czasie
-        daje wyniki średnie dla dnia (TODO: zmienić na akceptowanie też innych wartości niż 1d)
-        wada: oparty o group by *, więc może gubić część danych
-            w fields, które nie sa tagami i nie dają rozsądnego wyniku średniego
-                (strings i boolean, ale też np identyfikatory numeryczne)
-        działanie:
-            pętla po measurements
-                dla każdego robi select mean(*) into rp_target group by *, time(1d)
-                z zachowaniem nazw fields 
-                i dodaje min(*) i max(*)
-        
-    
-    mode == iterate_by_1h_window_series :
-        trochę bardziej rozbudowany, wolniejszy ale na pewno się wykona
-            (nie skończy się pamięć, bo wykonuje wiele małych zapytań)
-        wada: wybiera po jednym wierszu z godziny, więc bez informacji min i max
-            potencjalnie tracimy informacje o jakiś spikes
-        iteruje  po series
-        zaleta: dzięki nie używaniu group by, przepisuje dokładnie wszystko
-        działanie
-            pętla po measurments
-                pętla po series
-                    pętla po 1h oknach czasowych
-                        select * into rp_target limi 1
-                        czyli wybiera 1. wiersz z każdej godziny
-            zapisuje wynik do pliku: {now()}_downsample_influx_batch.csv
-            gdzie można zobaczyć ile się zapisało i w jakim czasie
- 
-    mode == iterate_by_1h_window_measurements_only :
-        j.w. ale iteruje po measurements tylko (a nie po series w każdym measurement)
-        wada: czyli mniej dokładny, bo może wyciąć część serii, 
-        działanie
-            pętla po measurments
-                    pętla po 1h oknach czasowych
-                        select * into rp_target limi 1
-                        czyli wybiera 1. wiersz z każdej godziny
-            zapisuje wynik do pliku: {now()}_downsample_influx_batch.csv
-            gdzie można zobaczyć ile się zapisało i w jakim czasie
+3 modes:
+- simple_group_by_fullscan
+- iterate_by_1h_window_measurements_only
+- iterate_by_1h_window_series
+
+configuration in workdir/config.ini
+
+see README.md
 
 """
 
@@ -304,5 +273,4 @@ print(f"{datetime.now()}|passed in: {df.time.max()-df.time.min()}")
 file_name = f"workdir/{datetime.now()}_downsample_influx_batch_{downsample_mode}.csv"
 df.to_csv(file_name)     
 print(f"Skończone. df zapisany do pliku {file_name}")
-                      
 
