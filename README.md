@@ -24,19 +24,86 @@ mkdir workdir
 wget -O workdir/config.ini https://raw.githubusercontent.com/pawelbura/downsample_influxdb_batch/main/app/config.ini
 ```
 
-And update `confit.ini` to your needs.
+And update `config.ini` to your needs.
 
 To create docker container (and map workdir from outside). I'm not using `docker run` as it is not a container to run all the time:
 ```bash
 docker create -v $PWD/workdir:/app/workdir --name=downsample_influxdb downsample_influxdb
 ```
-[optional] Please note that with this setup `localhost` address will not be accesible, you need to specify IP address. This can be overcome with using host network inside contaner:
-```bash
-docker create --net=host -v $PWD/workdir:/app/workdir --name=downsample_influxdb downsample_influxdb
-```
+[optional] Please note that with this setup `localhost` address will not be accesible, you need to specify IP address. This can be overcome with using host network inside contaner by adding `--net=host` to `docker create`
 
 ## docker start
-And then it can be started whenever needed using (**after updating `config.ini` to your needs**):
+To start scirpt use (**after updating `config.ini` to your needs**):
 ```bash
 docker start downsample_influxdb
 ```
+You can also attach STDOUT/STDERR and forward signals by adding `-a` flag to `docker start`
+
+
+# Configuration
+Configuration of this script is done through `config.ini` file in `wordir` directory.
+Configuration is divided into parts:
+## influxdb_connection
+Definition of connection, address, port, user, password. Both IP address or DNS address can be used. 
+See example `config.ini` for details and DEFAULT values.
+## influxdb_db
+configuration of database name and source and target retention policies. 
+See example `config.ini` for details and DEFAULT values.
+
+## downsample_mode
+Configuration of how to do downsampling
+Availble modes:
+- simple_group_by_fullscan
+- iterate_by_1h_window_measurements_only
+- iterate_by_1h_window_series
+See below for details
+
+# Downsampling modes
+All modes are selecting some data from source retention policy and insert int target retention policy. This is done through `select ... into` clause.
+Each mode is different in terms of
+- approach
+- number of target datapoints
+- time to execute
+
+## simple_group_by_1d_fullscan
+Full scan with group by on each measurement
+ - agregates data by 1 day (mean, max, min) 
+ - there is that fullscan can fail on bigger datasets (not tested yet, I don't know what influxdb engine will do)
+ - it is based on `group by *` so can loose some data (particulary fields that are not tags and their mean value isn't miningful, for instnce strings and booleans, but also some numric identifiers)
+ - **algorithm**:
+```
+for each measurements
+    select mean(*), max(*), min(*)
+    into rp_target 
+    group by *, time(1d)
+    note: field names are retained, so field named 'x' is not changed into 'mean_x' etc.
+```
+## iterate_by_1h_window_measurements_only
+It's slower than full scan but no risk of OOM error - many small `select ... into`
+-  iterates through measurements only (not by all disticn series in measurement), that's why it can ommit some series
+- does not group, selects only first row by time window
+- **algorithm**:
+```
+for each measurement
+    for each 1h window
+        select *
+        into rp_target 
+        limit 1 (takes only first row)
+```
+
+### iterate_by_1h_window_series
+It's slower than full scan but no risk of OOM error - many small `select ... into`
+- iterates through series 
+- does not group, selects only first row by time window
+- **algorithm**:
+```
+for each measurement
+    for each series
+        for each 1h window
+            select *
+            into rp_target 
+            limit 1 (takes only first row)
+```
+
+# Downsampling modes comparision
+tbd
