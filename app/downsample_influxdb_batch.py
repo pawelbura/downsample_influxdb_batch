@@ -101,7 +101,7 @@ end_time = datetime.combine(date.today(), time(0, 0)) - timedelta(days=end_date_
 # ustawienie start_time na now()-14d
 start_time = datetime.combine(date.today(), time(0, 0)) - timedelta(days=start_date_days_ago)
 
-print(f"{datetime.now()}|downsampling data from {start_time} to {end_time}")
+print(f"{datetime.now()}|downsampling time range from {start_time} to {end_time}")
 
 # formatowanie do timestap influx
 end_time = "{:.0f}".format(end_time.timestamp()*1000000000)
@@ -149,8 +149,7 @@ if downsample_mode == 'simple_group_by_fullscan' :
               if field['fieldType'] not in ('string','boolean'):
                   if len(field_names) > 0: field_names += ', '
                   field_names += f"mean(\"{field['fieldKey']}\") as \"{field['fieldKey']}\""
-        rsinsert = client.query(f"select {field_names}, min(*), max(*) \ 
-                                into \"{db_name}\".\"{rp_target}\".\"{measurement}\"                                 from \"{db_name}\".\"{rp_from}\".\"{measurement}\"                                 where time >= {start_time} and time <= {end_time}                                 group by *, time({downsample_time})")
+        rsinsert = client.query(f"select {field_names}, min(*), max(*)                                 into \"{db_name}\".\"{rp_target}\".\"{measurement}\"                                 from \"{db_name}\".\"{rp_from}\".\"{measurement}\"                                 where time >= {start_time} and time <= {end_time}                                 group by *, time({downsample_time})")
         print(rsinsert)
         # zapisanie wyniku do DataFrame
         df = df.append(pd.Series(data=[rsinsert['result']['written'][0], datetime.now()],index=['written','time'], name=measurement))
