@@ -121,8 +121,8 @@ Test run results:
 mode|select…into count|datapoins written count|time elapsed [HH:MM:SS]|size on disk [kB]
 ---|---:|---:|---:|---:
 source|-|-|-|40 428
-simple_group_by_fullscan|20|2 519|00:06:41| 3 108
-iterate_by_1h_window_measurements_only|6 066|6 008|00:14:28| 312	
-iterate_by_1h_window_series|26 813|26 378|01:03:07| 556
+simple_group_by_fullscan|20|2 607|00:06:43| 3 136
+iterate_by_1h_window_measurements_only|6 066|6 008|00:14:31| 328	
+iterate_by_1h_window_series|26 702|26 359|01:02:58| 492
 
 Note that simple_group_by_fullscan adds min and max data and other notes don't change (calculate mean) data just selects existing rows/datapoints.
