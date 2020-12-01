@@ -2,7 +2,7 @@
 python batch script to downsample influxdb database in a batch mode
 
 ### This script is inteded to be small, used from time to time and run in a batch mode.
-### Script prepared to tun in docker container
+### Script prepared to run in docker container
 
 ### Other ways to look at
 There are plenty of ways to do downsampling, for example the one suggested by influx:
