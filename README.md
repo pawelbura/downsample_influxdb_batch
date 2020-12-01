@@ -10,8 +10,14 @@ There are plenty of ways to do downsampling, for example the one suggested by in
  - From TICK stack, you can use Kapacitor, sample node, as described here: https://archive.docs.influxdata.com/kapacitor/v1.3/nodes/sample_node/ . But this is another comprehensive tool to configure.
 
 # How to run
+Clone/get repository to your target machine, for instance:
+```bash
+git clone https://github.com/pawelbura/downsample_influxdb_batch.git
+cd downsample_influxdb_batch/ 
+```
+
 ## docker build
-to build docker image from code, execute:
+to build docker image from code execute:
 ```bash
 docker build . -t downsample_influxdb 
 ```
@@ -106,4 +112,17 @@ for each measurement
 ```
 
 # Downsampling modes comparision
-tbd
+Short test on my Raspberry Pi 3 b, quite idle as running only docker, telegraf, influxdb and grafana.
+Test sample is influx database of telegraf data captured within last ~14 days
+DB with default settings, no continous queries, 20 measurements, ~250 series.
+Size of original/source target policy on disk ~40MB.
+
+Test run results:
+mode|select…into count|datapoins written count|time elapsed [HH:MM:SS]|size on disk [kB]
+---|---:|---:|---:|---:
+source|-|-|-|40 428
+simple_group_by_fullscan|20|2 519|00:06:41| 3 108
+iterate_by_1h_window_measurements_only|6 066|6 008|00:14:28| 312	
+iterate_by_1h_window_series|26 813|26 378|01:03:07| 556
+
+Note that simple_group_by_fullscan adds min and max data and other notes don't change (calculate mean) data just selects existing rows/datapoints.
