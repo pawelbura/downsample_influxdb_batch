@@ -89,6 +89,24 @@ if not True in [True if x['name']==rp_from else False for x in rs.get_points()]:
 
 print(f"{datetime.now()}| START |mode:{downsample_mode}|")
 print(f"{datetime.now()}|Retention policy source: {rp_from}|Retention policy target: {rp_target}|")
+
+# odczytanie z konfiguracji zasięgu 
+start_date_days_ago = config_object.getint('downsample_mode','start_date_days_ago', fallback=7)
+end_date_days_ago   = config_object.getint('downsample_mode','end_date_days_ago', fallback=0)
+
+from datetime import datetime, timedelta, date, time
+# ustawienie end_time na dziś północ, będzie ten sam moment w czasie dla wszystkich danych przepisanych do rp_wybrane
+end_time = datetime.combine(date.today(), time(0, 0)) - timedelta(days=end_date_days_ago)
+
+# ustawienie start_time na now()-14d
+start_time = datetime.combine(date.today(), time(0, 0)) - timedelta(days=start_date_days_ago)
+
+print(f"{datetime.now()}|downsampling data from {start_time} to {end_time}")
+
+# formatowanie do timestap influx
+end_time = "{:.0f}".format(end_time.timestamp()*1000000000)
+start_time = "{:.0f}".format(start_time.timestamp()*1000000000)
+
     
 # modes
 if downsample_mode == 'simple_group_by_fullscan' :
@@ -96,7 +114,8 @@ if downsample_mode == 'simple_group_by_fullscan' :
     """
     downsample_influxdb_batch_simple_group_by_fullscan
     """
-    # [opcjonalnie] usunięcie retention policy dzinne 
+    # [opcjonalnie] usunięcie retention policy dzinne
+    # celowo wstawione dopiero po ustaleniu trybu (a więc powtórzone)
     if rp_target_drop_before == rp_target_drop_before_YES:
         print("WARNING!!! Configuration set to drop target retention policy AND ALL DATA inside! Data may be lost.")
         rs = client.query(f"drop retention policy {rp_target} on {db_name}")
@@ -130,7 +149,8 @@ if downsample_mode == 'simple_group_by_fullscan' :
               if field['fieldType'] not in ('string','boolean'):
                   if len(field_names) > 0: field_names += ', '
                   field_names += f"mean(\"{field['fieldKey']}\") as \"{field['fieldKey']}\""
-        rsinsert = client.query(f"select {field_names}, min(*), max(*) into \"{db_name}\".\"{rp_target}\".\"{measurement}\" from \"{db_name}\".\"{rp_from}\".\"{measurement}\" group by *, time({downsample_time})")
+        rsinsert = client.query(f"select {field_names}, min(*), max(*) \ 
+                                into \"{db_name}\".\"{rp_target}\".\"{measurement}\"                                 from \"{db_name}\".\"{rp_from}\".\"{measurement}\"                                 where time >= {start_time} and time <= {end_time}                                 group by *, time({downsample_time})")
         print(rsinsert)
         # zapisanie wyniku do DataFrame
         df = df.append(pd.Series(data=[rsinsert['result']['written'][0], datetime.now()],index=['written','time'], name=measurement))
@@ -155,6 +175,7 @@ elif downsample_mode in ('iterate_by_1h_window_series', 'iterate_by_1h_window_me
 
               
     # [opcjonalnie] usunięcie retention policy dzinne 
+    # celowo wstawione dopiero po ustaleniu trybu (a więc powtórzone)
     if rp_target_drop_before == rp_target_drop_before_YES:
         print("WARNING!!! Configuration set to drop target retention policy AND ALL DATA inside! Data may be lost.")
         rs = client.query(f"drop retention policy {rp_target} on {db_name}")
@@ -202,18 +223,6 @@ elif downsample_mode in ('iterate_by_1h_window_series', 'iterate_by_1h_window_me
     # pętla po measurements 
     #     pętla okresem downsample_time
     #     i insert last() z tego okresu do retention policy target
-
-    # ustawienie end_time na dziś północ, będzie ten sam moment w czasie dla wszystkich danych przepisanych do rp_wybrane
-    end_time = datetime.combine(date.today(), time(0, 0))
-
-    # ustawienie start_time na now()-14d
-    start_time = end_time - timedelta(days=14)
-
-    print(f"{datetime.now()}|downsampling data from {start_time} to {end_time}")
-
-    # formatowanie do timestap influx
-    end_time = "{:.0f}".format(end_time.timestamp()*1000000000)
-    start_time = "{:.0f}".format(start_time.timestamp()*1000000000)
 
     # pobranie measurements
     results = client.query(f"show measurements on \"{db_name}\" ")
