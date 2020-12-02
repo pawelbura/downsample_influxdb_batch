@@ -53,7 +53,8 @@ Configuration is divided into parts:
 Definition of connection, address, port, user, password. Both IP address or DNS address can be used. 
 See example `config.ini` for details and DEFAULT values.
 ## influxdb_db
-configuration of database name and source and target retention policies. 
+Configuration of database name and source and target retention policies. 
+Time range to downsample also can be configured for example to downsample only data from last week.
 See example `config.ini` for details and DEFAULT values.
 
 ## downsample_mode
