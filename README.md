@@ -113,17 +113,19 @@ for each measurement
 ```
 
 # Downsampling modes comparision
-Short test on my Raspberry Pi 3 b, quite idle as running only docker, telegraf, influxdb and grafana.
-Test sample is influx database of telegraf data captured within last ~14 days
+Please note that performance of each mode strongly depends on your data structure, especialy number of datapoing, measurements and series.
+
+For reference, here short test on my Raspberry Pi 3 B, quite idle as running only docker, telegraf, influxdb and grafana.
+Test sample is influx database of telegraf data captured within last 14 days
 DB with default settings, no continous queries, 20 measurements, ~250 series.
-Size of original/source target policy on disk ~40MB.
+Size of original/source retention policy on disk ~20MB.
 
 Test run results:
 mode|select…into count|datapoins written count|time elapsed [HH:MM:SS]|size on disk [kB]
 ---|---:|---:|---:|---:
-source|-|-|-|40 428
-simple_group_by_fullscan|20|2 607|00:06:43| 3 136
-iterate_by_1h_window_measurements_only|6 066|6 008|00:14:31| 328	
-iterate_by_1h_window_series|26 702|26 359|01:02:58| 492
+source|-|-|-|20 428
+simple_group_by_fullscan|20|1 333|00:03:38| 1 860
+iterate_by_1h_window_measurements_only|6 066|6 008|00:14:34| 328	
+iterate_by_1h_window_series|26 610|26 247|01:04:14| 504
 
 Note that simple_group_by_fullscan adds min and max data and other modes don't change (calculate mean) data just select existing rows/datapoints.
