@@ -27,7 +27,7 @@ script is using `workdir` to read `config.ini` file and write some output files
 To make a dir and copy there initial `config.ini` file:
 ```bash
 mkdir workdir
-cp app/config.ini workdir/
+nano workdir/config.ini
 ```
 
 And update `config.ini` to your needs.
