@@ -13,6 +13,8 @@ WORKDIR /app/
 
 # Copy the python script
 COPY app/* /app/
+COPY LICENSE /app/
+COPY README.md /app/
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
