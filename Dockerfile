@@ -24,6 +24,5 @@ RUN pip install --trusted-host pypi.python.org -r requirements.txt
 # The -u flag specifies to use the unbuffered ouput.
 # in this way, what's printed by the app is visible on the host
 # while the container is running
-#CMD ["python", "-u", "app.py"]
-CMD ["ls", "-la"]
+CMD ["python", "-u", "app.py"]
 
