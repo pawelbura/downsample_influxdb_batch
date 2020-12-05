@@ -23,11 +23,6 @@ docker build . -t downsample_influxdb
 ```
 
 ## docker create
-script is using `workdir` to read `config.ini` file and write some output files
-You can config script to your needs by editing  initial `config.ini` file:
-```bash
-nano workdir/config.ini
-```
 To create docker container (and map workdir from outside). I'm not using `docker run` as it is not a container to run all the time:
 ```bash
 docker create -v $PWD/workdir:/app/workdir --name=downsample_influxdb downsample_influxdb
@@ -35,6 +30,11 @@ docker create -v $PWD/workdir:/app/workdir --name=downsample_influxdb downsample
 [optional] Please note that with this setup `localhost` address will not be accesible, you need to specify IP address. This can be overcome with using host network inside contaner by adding `--net=host` to `docker create`
 
 ## docker start
+Script is using `workdir` to read `config.ini` file and write some output files
+You can config script to your needs by editing  initial `config.ini` file:
+```bash
+nano workdir/config.ini
+```
 To start scirpt use (**after updating `config.ini` to your needs**):
 ```bash
 docker start downsample_influxdb
