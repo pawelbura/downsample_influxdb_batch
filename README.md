@@ -27,7 +27,7 @@ script is using `workdir` to read `config.ini` file and write some output files
 To make a dir and copy there initial `config.ini` file:
 ```bash
 mkdir workdir
-wget -O workdir/config.ini https://raw.githubusercontent.com/pawelbura/downsample_influxdb_batch/main/app/config.ini
+cp app/config.ini workdir/
 ```
 
 And update `config.ini` to your needs.
