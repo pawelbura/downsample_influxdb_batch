@@ -24,14 +24,10 @@ docker build . -t downsample_influxdb
 
 ## docker create
 script is using `workdir` to read `config.ini` file and write some output files
-To make a dir and copy there initial `config.ini` file:
+You can config script to your needs by editing  initial `config.ini` file:
 ```bash
-mkdir workdir
 nano workdir/config.ini
 ```
-
-And update `config.ini` to your needs.
-
 To create docker container (and map workdir from outside). I'm not using `docker run` as it is not a container to run all the time:
 ```bash
 docker create -v $PWD/workdir:/app/workdir --name=downsample_influxdb downsample_influxdb
