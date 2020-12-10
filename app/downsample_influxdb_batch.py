@@ -32,6 +32,7 @@ from configparser import ConfigParser
 ### pip3 install pandas
 ### pip3 install influxdb
 
+print('started')
 #Read config.ini file
 config_object = ConfigParser()
 config_object.read('workdir/config.ini')
@@ -247,13 +248,17 @@ elif downsample_mode in ('iterate_by_1h_window_series', 'iterate_by_1h_window_me
                 where_clause = ' and '
                 # to wycinamy "measurement," i dodajemy cudzysłowia na początek
                 where_clause += "\""+s['key'][len(measurement)+1:]
-                #zastępujemy ',' przez ' AND ' i dodajemy cudzysłowia
+                #dodanie escape char do '
+                where_clause = re.sub(r"(?<!\\)'", r"\'", where_clause)
+                #zastępujemy nieescape'owane , przez ' AND "
                 where_clause = re.sub(r"(?<!\\),", "' and \"", where_clause)
+                #zastęþujemy nieescape'owane = przez \"='
                 where_clause = re.sub(r"(?<!\\)=", "\"='", where_clause)
+                # usuwamy "\" (dodawane jako escape char spacji, przecinka, =) ale nie \'
+                where_clause = re.sub(r"\\(?!')", "", where_clause)
                 #cudzysłow na koniec
                 where_clause += "'"
-                # usuwamy "\" (dodawane jako escape char spacji, przecinka, =)
-                where_clause = where_clause.replace("\\","")
+                      
                 # i wykonujemy pętle po przedziałach godzinowych  
                 #print(f"where:{where_clause}")
                 print(':', end='')
